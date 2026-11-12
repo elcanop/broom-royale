@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BROOM ROYALE — Duelo Arcano en Escobas Voladoras (PC &amp; WebXR VR)</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%23161224' stroke='%23f5cd79' stroke-width='4'/><path d='M18 46 L46 18 M42 14 L50 22' stroke='%23f5cd79' stroke-width='5' stroke-linecap='round'/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- 3D WebGL / WebXR Canvas Container -->
+    <div id="viewport"></div>
+
+    <!-- Initial Loading Screen -->
+    <div id="loading-overlay" role="status" aria-live="polite">
+      <div class="loader-ring"></div>
+      <h2>FORJANDO EL CASTILLO Y TERRENO ESCOCÉS...</h2>
+      <p>Generando geometría gótica, estatuas voxel PBR, shaders de agua y atmósfera WebXR</p>
+    </div>
+
+    <!-- Main Lobby Overlay -->
+    <main id="lobby" aria-label="Menú Principal de Broom Royale">
+      <div class="lobby-backdrop"></div>
+      <div class="lobby-panel">
+        <div class="brand-header">
+          <span class="eyebrow">BATTLE ROYALE AÉREO · 20 MAGOS · WEBXR 6DoF</span>
+          <h1>BROOM ROYALE</h1>
+          <p class="tagline">
+            Surca los cielos del Castillo de las Tierras Altas en tu escoba voladora, domina cuatro hechizos arcanos y
+            sobrevive al vórtice de tormenta desde tu navegador o gafas de Realidad Virtual.
+          </p>
+        </div>
+
+        <div id="vr-status" class="vr-badge">Comprobando soporte WebXR VR...</div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="inp-name">NOMBRE DE MAGO</label>
+            <input id="inp-name" type="text" maxlength="18" value="Archimago" placeholder="Tu nombre..." />
+          </div>
+          <div class="field">
+            <label for="sel-quality">MOTOR PRO HDR &amp; CALIDAD</label>
+            <select id="sel-quality">
+              <option value="low">Baja (60+ FPS VR/Móvil)</option>
+              <option value="medium">Media (HDR Bloom + SSAO + God-Rays)</option>
+              <option value="high" selected>Alta (SMAA + Agua Reflectante + God-Rays)</option>
+              <option value="ultra">Ultra Pro (Sombras 4K + 6200 Pinos + Máximo HDR)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sel-atmo">ATMÓSFERA Y CLIMA</label>
+            <select id="sel-atmo">
+              <option value="sunset" selected>Atardecer Dorado (God-Rays Solares)</option>
+              <option value="night">Noche de Luna + Aurora Boreal</option>
+              <option value="storm">Tormenta Arcana (Relámpagos)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sel-diff">NIVEL DE MAGOS IA</label>
+            <select id="sel-diff">
+              <option value="0.38">Aprendiz</option>
+              <option value="0.65" selected>Auror Veterano</option>
+              <option value="0.9">Maestro Arcano</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>ELIGE TU CASA ARCANA</label>
+          <div class="houses-grid" role="radiogroup" aria-label="Casas arcanas">
+            <button type="button" class="house-card selected" data-house="0">
+              <span class="crest" style="--hcol: #8e1b1b; --hacc: #d4a017"></span>
+              <div>
+                <strong>Draconis</strong>
+                <small>Valor &amp; Llama</small>
+              </div>
+            </button>
+            <button type="button" class="house-card" data-house="1">
+              <span class="crest" style="--hcol: #1d5c34; --hacc: #c0c7cf"></span>
+              <div>
+                <strong>Sylvara</strong>
+                <small>Astucia &amp; Bruma</small>
+              </div>
+            </button>
+            <button type="button" class="house-card" data-house="2">
+              <span class="crest" style="--hcol: #1c3166; --hacc: #b08d57"></span>
+              <div>
+                <strong>Aquilon</strong>
+                <small>Sabiduría &amp; Cielo</small>
+              </div>
+            </button>
+            <button type="button" class="house-card" data-house="3">
+              <span class="crest" style="--hcol: #b8860b; --hacc: #222222"></span>
+              <div>
+                <strong>Solaris</strong>
+                <small>Lealtad &amp; Luz</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <button id="btn-solo" type="button" class="btn-primary">
+            <span>JUGAR BATTLE ROYALE (20 MAGOS)</span>
+            <small>Partida inmediata contra 19 Magos IA</small>
+          </button>
+          <button id="btn-vr" type="button" class="btn-vr">
+            <span>MODO GAFAS VR / CABINA 1ª PERSONA</span>
+            <small>WebXR Inmersivo 6DoF o Vista de Escoba</small>
+          </button>
+          <button id="btn-online" type="button" class="btn-secondary">
+            <span>SALA MULTIJUGADOR ONLINE</span>
+            <small>Servidor WebSocket + Bots</small>
+          </button>
+        </div>
+
+        <div class="controls-card">
+          <div>
+            <h4>CONTROLES PC / NAVEGADOR</h4>
+            <ul>
+              <li><kbd>Ratón</kbd> Apuntar varita y dirigir escoba</li>
+              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Impulso y desplazamiento lateral</li>
+              <li><kbd>Espacio</kbd> / <kbd>C</kbd> Ascender / Descender</li>
+              <li><kbd>Shift</kbd> Turbo de escoba · <kbd>V</kbd> Cámara 1ª/3ª persona</li>
+              <li><kbd>Clic Izq</kbd> Lanzar hechizo · <kbd>Clic Der</kbd> o <kbd>Q</kbd> Escudo <em>Scutum</em></li>
+              <li><kbd>1</kbd>-<kbd>4</kbd> o <kbd>Rueda</kbd> Cambiar hechizo</li>
+            </ul>
+          </div>
+          <div>
+            <h4>CONTROLES GAFAS VR (WebXR)</h4>
+            <ul>
+              <li><kbd>Mano Izq (Stick / Inclinación)</kbd> Pilotar escoba 6DoF</li>
+              <li><kbd>Gatillo Izq</kbd> Turbo · <kbd>Grip</kbd> Escudo <em>Scutum</em></li>
+              <li><kbd>Mano Der (6DoF)</kbd> Apuntar varita física en 3D</li>
+              <li><kbd>Gatillo Der</kbd> Lanzar hechizo en dirección de la varita</li>
+              <li><kbd>Botones A / B</kbd> Rotar hechizos · Instrumentos 3D en el manillar</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- In-Game HUD -->
+    <section id="hud" class="hidden" aria-label="Interfaz de vuelo y combate">
+      <div id="screen-vignette"></div>
+
+      <!-- Top Status Bar -->
+      <header class="hud-top">
+        <div class="hud-pill">
+          <span class="label">MAGOS EN VUELO</span>
+          <strong id="stat-alive">20</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="label">ELIMINACIONES</span>
+          <strong id="stat-kills">0</strong>
+        </div>
+        <div class="hud-pill storm-pill">
+          <span id="stat-zone-phase" class="label">TORMENTA FASE 1</span>
+          <strong id="stat-zone-time">0:50</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="label">VELOCIDAD</span>
+          <strong id="stat-speed">0 km/h</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="label">ALTITUD</span>
+          <strong id="stat-alt">180 m</strong>
+        </div>
+        <div class="hud-actions">
+          <button id="btn-cruise" type="button" class="hud-btn" title="Activar/Desactivar Vuelo Crucero Automático (Tecla X)">Crucero: OFF (X)</button>
+          <button id="btn-atmo" type="button" class="hud-btn" title="Cambiar Clima y Atmósfera (Tecla L)">Clima: Atardecer (L)</button>
+          <button id="btn-cam" type="button" class="hud-btn" title="Cambiar Cámara (Tecla V)">Vista 1ª/3ª (V)</button>
+          <button id="btn-mute" type="button" class="hud-btn">Audio: Activo</button>
+          <button id="btn-lobby" type="button" class="hud-btn">Menú</button>
+        </div>
+      </header>
+
+      <!-- Interactive Map Landmarks / Fast-Travel & Waypoint Bar -->
+      <nav id="poi-nav" class="poi-nav" aria-label="Navegación Rápida por el Mapa">
+        <span class="poi-title">MAPA / VIAJE RÁPIDO:</span>
+        <button type="button" class="poi-btn" data-poi="castle" title="Volar al Gran Salón y Patio Central">🏰 Gran Salón</button>
+        <button type="button" class="poi-btn" data-poi="astronomy" title="Volar a la Torre de Astronomía">🔭 Torre Astronomía</button>
+        <button type="button" class="poi-btn" data-poi="bridge" title="Volar al Puente del Viaducto">🌉 Puente Viaducto</button>
+        <button type="button" class="poi-btn" data-poi="stadium" title="Volar al Estadio de Escobas (Quidditch)">🏟️ Estadio</button>
+        <button type="button" class="poi-btn" data-poi="lake" title="Volar al Lago Negro y Guardianes Voxel">🌊 Lago Negro</button>
+        <button type="button" class="poi-btn" data-poi="stones" title="Volar al Círculo de Piedras Rúnicas">🪨 Piedras Rúnicas</button>
+      </nav>
+
+      <!-- Center Crosshair & Countdown Banner -->
+      <div id="center-banner" class="center-banner hidden">DUELO EN 5...</div>
+      <div class="crosshair" aria-hidden="true">
+        <div class="reticle-ring"></div>
+        <div class="reticle-dot"></div>
+        <div id="hit-marker" class="hit-marker"></div>
+      </div>
+
+      <!-- Top-Right Minimap & Kill Feed -->
+      <aside class="hud-right">
+        <div class="minimap-wrap" title="Clic: Marcar Baliza 3D · Doble Clic o Shift+Clic: Teletransportar escoba a ese punto">
+          <canvas id="minimap" width="200" height="200"></canvas>
+          <span class="compass-n">N</span>
+          <span id="waypoint-dist" class="waypoint-label">Clic en mapa: Ruta 3D</span>
+        </div>
+        <div id="kill-feed" class="kill-feed" aria-live="polite"></div>
+      </aside>
+
+      <!-- Bottom-Left Vitals (HP, Mana, Stamina) -->
+      <div class="hud-vitals">
+        <div class="vital-row">
+          <span class="vital-label">SALUD</span>
+          <div class="vital-track"><div id="bar-hp" class="vital-fill hp" style="width: 100%"></div></div>
+          <span id="val-hp" class="vital-val">100 / 100</span>
+        </div>
+        <div class="vital-row">
+          <span class="vital-label">MANÁ</span>
+          <div class="vital-track"><div id="bar-mana" class="vital-fill mana" style="width: 100%"></div></div>
+          <span id="val-mana" class="vital-val">100 / 100</span>
+        </div>
+        <div class="vital-row">
+          <span class="vital-label">TURBO</span>
+          <div class="vital-track"><div id="bar-stam" class="vital-fill stam" style="width: 100%"></div></div>
+          <span id="val-stam" class="vital-val">100%</span>
+        </div>
+      </div>
+
+      <!-- Bottom-Center Spell Bar -->
+      <nav class="spell-bar" aria-label="Grimorio de Hechizos">
+        <button type="button" class="spell-slot active" data-spell="fire">
+          <img src="/assets/icon_fire.jpg" alt="Ignis" />
+          <span class="hotkey">1</span>
+          <span class="spell-name">Ignis</span>
+          <span class="spell-cost">13 MP · Explosivo</span>
+          <div class="cd-overlay"></div>
+        </button>
+        <button type="button" class="spell-slot" data-spell="ice">
+          <img src="/assets/icon_ice.jpg" alt="Glacies" />
+          <span class="hotkey">2</span>
+          <span class="spell-name">Glacies</span>
+          <span class="spell-cost">9 MP · Escarcha</span>
+          <div class="cd-overlay"></div>
+        </button>
+        <button type="button" class="spell-slot" data-spell="lightning">
+          <img src="/assets/icon_lightning.jpg" alt="Fulgur" />
+          <span class="hotkey">3</span>
+          <span class="spell-name">Fulgur</span>
+          <span class="spell-cost">32 MP · Rayo</span>
+          <div class="cd-overlay"></div>
+        </button>
+        <button type="button" class="spell-slot" data-spell="shield">
+          <img src="/assets/icon_shield.jpg" alt="Scutum" />
+          <span class="hotkey">4 / Q</span>
+          <span class="spell-name">Scutum</span>
+          <span class="spell-cost">Escudo Arcano</span>
+          <div class="cd-overlay"></div>
+        </button>
+      </nav>
+    </section>
+
+    <!-- End of Match Modal -->
+    <div id="end-modal" class="end-modal hidden" role="dialog" aria-modal="true">
+      <div class="end-card">
+        <h2 id="end-title" class="end-title victory">¡VICTORIA ARCANA!</h2>
+        <p id="end-subtitle">Dominaste los cielos del castillo.</p>
+        <div id="end-stats" class="end-stats"></div>
+        <div class="end-actions">
+          <button id="btn-replay" type="button" class="btn-primary">VOLVER A VOLAR (NUEVA PARTIDA)</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
